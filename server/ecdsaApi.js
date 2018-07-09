@@ -2,6 +2,7 @@
 // Module that uses web3.js to sign an ECDSA signature over a sha3 hash of the order data
 // can be used to validate the legitimacy of an order inside the smart contract
 const Web3 = require('web3');
+
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
 
 const ecdsaApi = {};
@@ -39,13 +40,12 @@ ecdsaApi.signOrder = ({
     sender,
 }) => {
     const signatureMessage = `0x${toBytes32(Number(buy))}${toBytes32(Number(tubeAmount))}${toBytes32(Number(pipeAmount))}${toBytes32(sender)}`;
-    const hashedMessage = web3.sha3(signatureMessage, { encoding: 'hex' });
-    
     const signature = web3.eth.sign(sender, signatureMessage);
     return {
         r: signature.slice(0, 66), // first 2 chars are '0x'
         s: `0x${signature.slice(66, 130)}`,
-        v: Number(signature.slice(130, 132))+27 // https://github.com/ethereum/wiki/wiki/JavaScript-API#web3ethsign
-    }
-}
+        v: Number(signature.slice(130, 132)) + 27, // https://github.com/ethereum/wiki/wiki/JavaScript-API#web3ethsign
+    };
+};
+
 module.exports = ecdsaApi;

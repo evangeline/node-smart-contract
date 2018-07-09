@@ -4,7 +4,7 @@ We are thrilled you are interviewing with CreditMint and we can't wait to meet y
 - a phone screening
 - a short take home project
 - an on-site pairing exercise, which usually extends the project
-- a team social.
+- a team social
 
 The goal of this project is to see how you think, how you prioritize tasks when there is a lot to do and how quickly you can pick up new coding concepts. It will also give us a starting point for the pair programming exercise we will do when you come in for interview. 
 
@@ -14,7 +14,7 @@ You can also email anyone of arnaud@creditmint.io, joe@creditmint.io or zac@cred
 
 #### The Challenge
 
-The challenge is to build a Node.js server that acts as an exchange for two assets, ```Pipes``` and ```Tubes```. The assets are goverened by an Ethereum smart contract ```SimpleExchange.sol```, the server must interface with this smart contract via the [web3.js](https://github.com/ethereum/wiki/wiki/JavaScript-API) library.
+The challenge is to build a Node.js server that acts as an exchange for two assets, ```pipes``` and ```tubes```. The assets are goverened by an Ethereum smart contract at ```truffle/contracts/SimpleExchange.sol```. The server must interface with this smart contract via the [web3.js](https://github.com/ethereum/wiki/wiki/JavaScript-API) library.
 
 The server's responsibility is to maintain an order book of buy and sell orders, and transmit orders to the smart contract to be executed. The smart contract implementation is basic and does not allow for partial fills, is not permissioned and lacks vital security features!
 

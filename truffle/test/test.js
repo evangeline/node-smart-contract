@@ -1,14 +1,11 @@
-var SimpleExchange = artifacts.require('../contracts/SimpleExchange');
+/* global artifacts, assert, contract, beforeEach, it:true */
+const SimpleExchange = artifacts.require('../contracts/SimpleExchange');
 
-contract('SimpleExchange', function(accounts) {
+contract('SimpleExchange', (accounts) => {
     let contract;
     beforeEach(async () => {
-        const initialtubeBalance = accounts.map((a, i) => {
-            return i;
-        });
-        const initialPipeBalance = accounts.map((a, i) => {
-            return 2*i;
-        })
+        const initialtubeBalance = accounts.map((a, i) => i);
+        const initialPipeBalance = accounts.map((a, i) => (2 * i));
         contract = await SimpleExchange.new(accounts, initialtubeBalance, initialPipeBalance);
     });
 

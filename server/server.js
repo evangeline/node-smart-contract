@@ -15,7 +15,8 @@ function makeServer() {
 
     routes(app, {});
     const server = app.listen(4000, () => {
-        console.log(`Server is running on http://localhost:4000 or http://127.0.0.1:4000`);
+        // eslint-disable-next-line no-console
+        console.log('Server is running on http://localhost:4000 or http://127.0.0.1:4000');
     });
 
     return server;

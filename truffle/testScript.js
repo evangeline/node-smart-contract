@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 const { spawn } = require('child_process');
 const process = require('process');
 const Promise = require('bluebird');
@@ -17,12 +18,6 @@ let migrationErrors;
 let migrationOutput;
 let mochaErrors;
 let mochaOutput;
-
-let truffleConsole;
-function finish() {
-    truffleConsole.kill();
-    console.log('###### END');
-}
 
 function runTests(finish) {
     console.log('###### RUNNING TESTS');
@@ -48,7 +43,7 @@ function runTests(finish) {
 
 function initMigrations(callback) {
     console.log('###### SPAWNING MIGRATIONS');
-    const migrations = spawn('truffle' + ext, ['migrate', '--reset', '--seed 2c2891d4'], { shell: true });
+    const migrations = spawn(`truffle${ext}`, ['migrate', '--reset', '--seed 2c2891d4'], { shell: true });
 
     migrations.stderr.on('data', (text) => {
         console.log(text);
@@ -67,7 +62,12 @@ function initMigrations(callback) {
 function spawnConsole() {
     let first = false;
     console.log('###### SPAWNING DEVELOPMENT TESTRPC');
-    truffleConsole = spawn('truffle' + ext, ['develop'], { shell: true });
+    const truffleConsole = spawn(`truffle${ext}`, ['develop'], { shell: true });
+
+    function finish() {
+        truffleConsole.kill();
+        console.log('###### END');
+    }
 
     truffleConsole.stdout.on('data', (text) => {
         if (text.includes('truffle(develop)')) {

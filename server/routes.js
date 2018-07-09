@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 
-module.exports = function routing(app, cache) {
+module.exports = function routing(app) {
     app.use(cors({
         credentials: true,
         methods: ['GET', 'PUT', 'POST', 'DELETE'],
