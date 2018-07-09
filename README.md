@@ -20,10 +20,10 @@ The server's responsibility is to maintain an order book of buy and sell orders,
 
 Your submission should implement a server that satisfies the following requirements:
 
-1. Maintain an order book in a persistent database.
-2. Implement a server route that allows a user to get their balance of ```pipes```
-3. Implement a server route that allows a user to get their balance of ```tubes```
-4. Implement a server route that allows a user to place a ```buy``` or ```sell``` order
+1. Implement a server route that allows a user to place a ```buy``` or ```sell``` order
+2. Maintain an order book (list of buy and sell orders) in a persistent database.
+3. Implement a server route that allows a user to get their balance of ```pipes```
+4. Implement a server route that allows a user to get their balance of ```tubes```
 5. Implement a server route that allows a user to get their ```unfilled orders```
 
 To get you started, we've implemented some tests to validate the above in ```./server/test/test.js```. The server implementation relies on calling smart contracts deployed via the [truffle](www.truffle.com) framework. We've built a script which handles this for you and runs the tests, which is called via ```npm run test```.
@@ -37,6 +37,7 @@ The backend API specification, and the smart contract specification, is outlined
 We've provided a basic module structure, including a basic database module that connects to a [lowdb](https://github.com/typicode/lowdb) instance. Feel free to replace anything you want.
 
 Get in touch with us on Slack if you have any issues getting started, we're aware that interfacing with smart contracts via web3.js can be tricky, especially given the lack of documentation out there.
+
 #### Stretch Goals
 
 1. Upgrade the smart contract and backend interface to allow for partial order fills.
