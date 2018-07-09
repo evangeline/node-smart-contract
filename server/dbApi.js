@@ -1,7 +1,6 @@
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const uuidv4 = require('uuid/v4'); // to create order ids
-const web3Api = require('../web3Api');
 
 const adapter = new FileSync('./db.json');
 

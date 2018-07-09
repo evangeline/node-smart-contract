@@ -1,5 +1,9 @@
 pragma solidity ^0.4.23;
 
+// SimpleExchange
+// Implements a basic exchange between two digital assets: 'tube' and 'pipe'
+// There are no security/validation features! A stretch goal is to tighten up this smart
+// contract and remove the vulnerabilities.
 contract SimpleExchange {
 
     mapping(address => uint) public tubeBalance;
@@ -14,6 +18,7 @@ contract SimpleExchange {
 
     function deregisterExchange() public returns(bool) {
         exchanges[msg.sender] = false;
+        return true;
     }
 
     constructor(address[] initialOwners, uint[] initialtubeBalance, uint[] initialPipeBalance) public {
@@ -23,6 +28,11 @@ contract SimpleExchange {
         }
     }
 
+    // Places an order to exchange pipes and tubes between a buyer and seller.
+    // The method trustingly assumes that the buyer and seller consent to the order.
+    // 'ecdsarecover' can be used, alongside valid signatures,
+    // to validate that the 'order' was consented to by buyer and seller
+    // https://ethereum.stackexchange.com/questions/710/how-can-i-verify-a-cryptographic-signature-that-was-produced-by-an-ethereum-addr
     function placeOrder(bool buy, uint tubeAmount, uint pipeAmount, address buyer, address seller) public returns (bool) {
         if (buy) {
             require(tubeBalance[seller] > tubeAmount);

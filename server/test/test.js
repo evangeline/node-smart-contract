@@ -4,20 +4,14 @@ const chaiHttp = require('chai-http');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 
-const startServer = require('../../server/server.js'); // https://glebbahmutov.com/blog/how-to-correctly-unit-test-express-server/
+const startServer = require('../server.js'); // https://glebbahmutov.com/blog/how-to-correctly-unit-test-express-server/
+const web3Api = require('../web3Api');
+const ecdsaApi = require('../ecdsaApi');
 
-const { ethereumAddresses } = require('../../config/index');
-
-
-// what do I need to do...
-// I need to implement every route
-// we have routes to get balances
-// we need a route to place an order
-// we need a route to get outstanding orders
-// ### Variables
 chai.should();
-chai.use(chaiHttp);
+chai.use(chaiHttp); // we use this to mock network requests
 
+const ethereumAddresses = web3Api.getAccounts();
 
 describe('Exchange', () => {
     let app;
@@ -49,13 +43,18 @@ describe('Exchange', () => {
         });
     
         it('can place order', async () => {
+            const order = {
+                buy: true,
+                tubeAmount: 3,
+                pipeAMount: 2,
+                sender: ethereumAddresses[7]
+            };
+            const signature = ecdsaApi.signOrder(order);
             const res = await chai.request(app)
             .post(`/api/placeOrder`)
             .send({
-                buy: 1,
-                tubeAmount: 3,
-                pipeAmount: 2,
-                sender: ethereumAddresses[7],
+                ...order,
+                signature
             });
             expect(res.body.matched).to.equal(false);
             expect(res.body.txHash).to.equal(null);
@@ -92,6 +91,12 @@ describe('Exchange', () => {
         });
     
         afterEach(() => {
+            const adapter = new FileSync('./db.json');
+            const db = low(adapter);
+            db.defaults({
+                orders: [],
+            }).write();
+            db.setState({ orders: [] }).write();
             app.close()
         });
         
@@ -109,13 +114,19 @@ describe('Exchange', () => {
         });
 
         it('can place order and send transaction', async () => {
+            const order = {
+                buy: false,
+                tubeAmount: 4,
+                pipeAMount: 3,
+                sender: ethereumAddresses[7]
+            };
+            const signature = ecdsaApi.signOrder(order);
+
             const res = await chai.request(app)
             .post(`/api/placeOrder`)
             .send({
-                buy: false,
-                tubeAmount: 4,
-                pipeAmount: 3,
-                sender: ethereumAddresses[7],
+                ...order,
+                signature
             });
             expect(res.body.matched).to.equal(true);
             expect(res.body.txHash.length).to.equal(66);
