@@ -4,10 +4,18 @@ const FileSync = require('lowdb/adapters/FileSync');
 
 const adapter = new FileSync('./db.json');
 
-const dbApi = {};
 const db = low(adapter);
 db.defaults({
     orders: [],
 }).write();
 
-module.exports = dbApi;
+module.exports = {
+    getTubeBalance(sender) {
+        const user = db.get('people').find({ id: Number(sender) }).value();
+        return user.tubeBalance;
+    },
+    getPipeBalance(sender) {
+        const user = db.get('people').find({ id: Number(sender) }).value();
+        return user.pipeBalance;
+    }
+};

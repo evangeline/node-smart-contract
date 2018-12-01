@@ -5,7 +5,7 @@
 
 const express = require('express');
 
-// ### Inernal Dependencies
+// ### Internal Dependencies
 
 const routes = require('./routes');
 
@@ -21,5 +21,7 @@ function makeServer() {
 
     return server;
 }
+
+console.log('Making server...');
 
 module.exports = makeServer;

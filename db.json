@@ -1,3 +1,15 @@
 {
-  "orders": []
+  "orders": [],
+  "people": [
+    {
+      "id": 1,
+      "pipeBalance": 1,
+      "tubeBalance": 0
+    },
+    {
+      "id": 2,
+      "pipeBalance": 0,
+      "tubeBalance": 1
+    }
+  ]
 }

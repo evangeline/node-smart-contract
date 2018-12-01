@@ -3,3 +3,4 @@
 node_modules
 testLogs
 truffle/build/*
+.idea/
