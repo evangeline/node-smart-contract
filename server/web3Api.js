@@ -13,7 +13,7 @@ const Web3 = require('web3');
 const SimpleExchange = require('../truffle/build/contracts/SimpleExchange.json');
 
 // eslint-disable-next-line no-unused-vars
-const { address: contractAddress } = SimpleExchange.networks[5777];
+const { address: contractAddress } = SimpleExchange.networks[4447];
 // we use 'truffle develop' in our test script to spawn an in-memory javascript
 // implementation of an Ethereum test network. It runs on port 9545.
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
@@ -21,6 +21,17 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
 // eslint-disable-next-line no-unused-vars
 const simpleExchangeInterface = web3.eth.contract(SimpleExchange.abi);
 const simpleExchangeInstance = simpleExchangeInterface.at(contractAddress);
+// setting default account to pay gas?
+web3.eth.defaultAccount = web3.eth.accounts[0];
+
+// check is orderCreator is a buyer or seller
+function buyerOrSeller(buy, orderCreator, matchingParty, callback) {
+    if (buy === 'true') {
+        callback(true, orderCreator, matchingParty);
+    } else {
+        callback(false, matchingParty, orderCreator);
+    }
+}
 
 const web3Api = {
     getPipeBalance(sender, callback) {
@@ -42,21 +53,29 @@ const web3Api = {
                 callback(pipeBalance);
             }
         });
+    },
+    placeOrder(body, matchingParty, callback) {
+        const buy = body.buy;
+        const tubeAmount = body.tubeAmount;
+        const pipeAmount = body.pipeAmount;
+        const orderCreator = body.sender;
+
+        buyerOrSeller(buy, orderCreator, matchingParty, function (boolBuy, buyer, seller) {
+            console.log(boolBuy);
+            console.log(tubeAmount);
+            console.log(pipeAmount);
+            console.log(buyer);
+            console.log(seller);
+            simpleExchangeInstance.placeOrder.sendTransaction(boolBuy, tubeAmount, pipeAmount, orderCreator, seller, (error, result) => {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log(result);
+                    callback(result);
+                }
+            });
+        });
     }
-    // placeOrder(body, callback) {
-    //     const buy = body.buy;
-    //     const tubeAmount = body.tubeAmount;
-    //     const pipeAmount = body.pipeAmount;
-    //     const sender = body.sender;
-    //     simpleExchangeInstance.placeOrder.sendTransaction(sender, (error, result) => {
-    //         if (error) {
-    //             console.log(error);
-    //         } else {
-    //             const pipeBalance = result.toString(10);
-    //             callback(pipeBalance);
-    //         }
-    //     });
-    // }
 };
 
 web3Api.getAccounts = () => web3.eth.accounts;

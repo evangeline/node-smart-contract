@@ -33,15 +33,21 @@ module.exports = function routing(app) {
 
     router.post('/api/placeOrder', wrapAsync(async (req, res, next) => {
         const body = req.body;
-        dbApi.placeOrder(body, function (order) {
-            res.status(201).json(order).send();
+        dbApi.placeOrder(body, (matched, matchingParty) => {
+            if (matched === true) {
+                web3Api.placeOrder(body, matchingParty, function (txHash) {
+                    res.status(201).json({ matched: matched, txHash: txHash }).send();
+                    return next();
+                });
+            }
+            res.status(201).json({ matched: matched, txHash: null }).send();
             return next();
         });
     }));
 
     router.get('/api/:sender/tubeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getTubeBalance(sender, function(tubeBalance) {
+        web3Api.getTubeBalance(sender, (tubeBalance) => {
             res.status(200).json({ balance: tubeBalance }).send();
             return next();
         });
@@ -49,14 +55,17 @@ module.exports = function routing(app) {
 
     router.get('/api/:sender/pipeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getPipeBalance(sender, function(pipeBalance) {
+        web3Api.getPipeBalance(sender, (pipeBalance) => {
             res.status(200).json({ balance: pipeBalance }).send();
             return next();
         });
     }));
 
-    router.get('/api/:sender/outstandingOrders', async (req, res, next) => {
-        res.status(200).json({}).send();
-        return next();
-    });
+    router.get('/api/:sender/outstandingOrders', wrapAsync(async (req, res, next) => {
+        const sender = req.params.sender;
+        dbApi.outstandingOrders(sender, (orders) => {
+            res.status(200).json(orders).send();
+            return next();
+        });
+    }));
 };

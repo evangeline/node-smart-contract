@@ -47,7 +47,7 @@ describe('Exchange', () => {
             const order = {
                 buy: true,
                 tubeAmount: 3,
-                pipeAMount: 2,
+                pipeAmount: 2,
                 sender: ethereumAddresses[7],
             };
             const signature = ecdsaApi.signOrder(order);
@@ -77,6 +77,8 @@ describe('Exchange', () => {
                     tubeAmount: 4,
                     pipeAmount: 3,
                     sender: ethereumAddresses[7],
+                    // TODO ?????
+                    active: true,
                 }],
             }).write();
             app = startServer();
@@ -109,7 +111,7 @@ describe('Exchange', () => {
             const order = {
                 buy: false,
                 tubeAmount: 4,
-                pipeAMount: 3,
+                pipeAmount: 3,
                 sender: ethereumAddresses[7],
             };
             const signature = ecdsaApi.signOrder(order);
