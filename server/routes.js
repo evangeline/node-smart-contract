@@ -19,18 +19,31 @@ module.exports = function routing(app) {
 
     app.use('/', router);
 
+    app.use(function(error, req, res, next) {
+        // Gets called because of `wrapAsync()`
+        res.status(400).json({ error: error.message }).send();
+    });
+
+    function wrapAsync(fn) {
+        return function(req, res, next) {
+            // Make sure to `.catch()` any errors and pass them along to the `next()`
+            // middleware in the chain, in this case the error handler.
+            fn(req, res, next).catch(next);
+        };
+    }
+
     router.post('/api/placeOrder', async (req, res, next) => {
         res.status(201).json({}).send();
         return next();
     });
 
-    router.get('/api/:sender/tubeBalance', async (req, res, next) => {
+    router.get('/api/:sender/tubeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getTubeBalance(sender, function(pipeBalance) {
-            res.status(200).json({ balance: pipeBalance }).send();
+        web3Api.getTubeBalance(sender, function(tubeBalance) {
+            res.status(200).json({ balance: tubeBalance }).send();
             return next();
         });
-    });
+    }));
 
     router.get('/api/:sender/pipeBalance', async (req, res, next) => {
         const sender = req.params.sender;
