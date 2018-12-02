@@ -26,8 +26,10 @@ module.exports = function routing(app) {
 
     router.get('/api/:sender/tubeBalance', async (req, res, next) => {
         const sender = req.params.sender;
-        res.status(200).json({ balance: 0 }).send();
-        return next();
+        web3Api.getTubeBalance(sender, function(pipeBalance) {
+            res.status(200).json({ balance: pipeBalance }).send();
+            return next();
+        });
     });
 
     router.get('/api/:sender/pipeBalance', async (req, res, next) => {

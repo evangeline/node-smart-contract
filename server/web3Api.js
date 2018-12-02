@@ -24,7 +24,17 @@ const simpleExchangeInstance = simpleExchangeInterface.at(contractAddress);
 
 const web3Api = {
     getPipeBalance(sender, callback) {
-        simpleExchangeInstance.pipeBalance.call(web3.eth.accounts[2], (error, result) => {
+        simpleExchangeInstance.pipeBalance.call(sender, (error, result) => {
+            if (error) {
+                console.log(error);
+            } else {
+                const pipeBalance = result.toString(10);
+                callback(pipeBalance);
+            }
+        });
+    },
+    getTubeBalance(sender, callback) {
+        simpleExchangeInstance.tubeBalance.call(sender, (error, result) => {
             if (error) {
                 console.log(error);
             } else {
