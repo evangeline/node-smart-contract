@@ -13,15 +13,27 @@ const Web3 = require('web3');
 const SimpleExchange = require('../truffle/build/contracts/SimpleExchange.json');
 
 // eslint-disable-next-line no-unused-vars
-const { address: contractAddress } = SimpleExchange.networks[4447];
+const { address: contractAddress } = SimpleExchange.networks[5777];
 // we use 'truffle develop' in our test script to spawn an in-memory javascript
 // implementation of an Ethereum test network. It runs on port 9545.
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
 
 // eslint-disable-next-line no-unused-vars
 const simpleExchangeInterface = web3.eth.contract(SimpleExchange.abi);
-const web3Api = {};
+const simpleExchangeInstance = simpleExchangeInterface.at(contractAddress);
+
+const web3Api = {
+    getPipeBalance(sender, callback) {
+        simpleExchangeInstance.pipeBalance.call(web3.eth.accounts[2], (error, result) => {
+            if (error) {
+                console.log(error);
+            } else {
+                const pipeBalance = result.toString(10);
+                callback(pipeBalance);
+            }
+        });
+    }
+};
 
 web3Api.getAccounts = () => web3.eth.accounts;
-
 module.exports = web3Api;

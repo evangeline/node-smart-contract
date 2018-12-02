@@ -2,6 +2,10 @@
 const express = require('express');
 const cors = require('cors');
 const dbApi = require('./dbApi');
+const web3Api = require('./web3Api');
+const ethereumAddresses = web3Api.getAccounts();
+
+// middleware to check if address is valid
 
 module.exports = function routing(app) {
     app.use(cors({
@@ -15,33 +19,26 @@ module.exports = function routing(app) {
 
     app.use('/', router);
 
-    router.get('/api', async (req, res, next) => {
-        res.status(200).json({ message: 'woohoo' }).send();
-        return next();
-    });
-
     router.post('/api/placeOrder', async (req, res, next) => {
         res.status(201).json({}).send();
         return next();
     });
 
     router.get('/api/:sender/tubeBalance', async (req, res, next) => {
-        let sender = req.params.sender;
-        let tubeBalance = dbApi.getTubeBalance(sender);
-        res.status(200).json({ balance: tubeBalance }).send();
+        const sender = req.params.sender;
+        res.status(200).json({ balance: 0 }).send();
         return next();
     });
 
     router.get('/api/:sender/pipeBalance', async (req, res, next) => {
-        let sender = req.params.sender;
-        let pipeBalance = dbApi.getPipeBalance(sender);
-        res.status(200).json({ balance: pipeBalance }).send();
-        return next();
+        const sender = req.params.sender;
+        web3Api.getPipeBalance(sender, function(pipeBalance) {
+            res.status(200).json({ balance: pipeBalance }).send();
+            return next();
+        });
     });
 
     router.get('/api/:sender/outstandingOrders', async (req, res, next) => {
-        console.log('tube balance sender:'+req.params.sender);
-        let sender = req.params.sender;
         res.status(200).json({}).send();
         return next();
     });
