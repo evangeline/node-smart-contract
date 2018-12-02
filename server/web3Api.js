@@ -43,6 +43,20 @@ const web3Api = {
             }
         });
     }
+    // placeOrder(body, callback) {
+    //     const buy = body.buy;
+    //     const tubeAmount = body.tubeAmount;
+    //     const pipeAmount = body.pipeAmount;
+    //     const sender = body.sender;
+    //     simpleExchangeInstance.placeOrder.sendTransaction(sender, (error, result) => {
+    //         if (error) {
+    //             console.log(error);
+    //         } else {
+    //             const pipeBalance = result.toString(10);
+    //             callback(pipeBalance);
+    //         }
+    //     });
+    // }
 };
 
 web3Api.getAccounts = () => web3.eth.accounts;
