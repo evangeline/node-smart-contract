@@ -36,12 +36,15 @@ module.exports = function routing(app) {
         dbApi.placeOrder(body, (matched, matchingParty) => {
             if (matched === true) {
                 web3Api.placeOrder(body, matchingParty, function (txHash) {
+                    console.log(`matched ${matched}`);
                     res.status(201).json({ matched: matched, txHash: txHash }).send();
                     return next();
                 });
+            } else if (matched === false) {
+                console.log(`matched ${matched}`);
+                res.status(201).json({ matched: matched, txHash: null }).send();
+                return next();
             }
-            res.status(201).json({ matched: matched, txHash: null }).send();
-            return next();
         });
     }));
 

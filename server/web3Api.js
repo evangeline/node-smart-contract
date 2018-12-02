@@ -56,21 +56,14 @@ const web3Api = {
     },
     placeOrder(body, matchingParty, callback) {
         const buy = body.buy;
-        const tubeAmount = body.tubeAmount;
-        const pipeAmount = body.pipeAmount;
+        const tubeAmount = parseInt(body.tubeAmount);
+        const pipeAmount = parseInt(body.pipeAmount);
         const orderCreator = body.sender;
-
         buyerOrSeller(buy, orderCreator, matchingParty, function (boolBuy, buyer, seller) {
-            console.log(boolBuy);
-            console.log(tubeAmount);
-            console.log(pipeAmount);
-            console.log(buyer);
-            console.log(seller);
-            simpleExchangeInstance.placeOrder.sendTransaction(boolBuy, tubeAmount, pipeAmount, orderCreator, seller, (error, result) => {
+            simpleExchangeInstance.placeOrder.sendTransaction(boolBuy, tubeAmount, pipeAmount, buyer, seller, (error, result) => {
                 if (error) {
                     console.log(error);
                 } else {
-                    console.log(result);
                     callback(result);
                 }
             });
