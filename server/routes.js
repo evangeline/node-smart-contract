@@ -50,19 +50,18 @@ module.exports = function routing(app) {
 
     router.get('/api/:sender/tubeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getTubeBalance(sender, (tubeBalance) => {
-            res.status(200).json({ balance: tubeBalance }).send();
-            return next();
-        });
+        const tubeBalance = await web3Api.getTubeBalance(sender);
+        res.status(200).json({ balance: tubeBalance }).send();
+        return next();
     }));
 
     router.get('/api/:sender/pipeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getPipeBalance(sender, (pipeBalance) => {
-            res.status(200).json({ balance: pipeBalance }).send();
-            return next();
-        });
+        const pipeBalance = await web3Api.getPipeBalance(sender);
+        res.status(200).json({ balance: pipeBalance }).send();
+        return next();
     }));
+
 
     router.get('/api/:sender/outstandingOrders', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;

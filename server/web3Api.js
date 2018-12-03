@@ -34,23 +34,23 @@ function buyerOrSeller(buy, orderCreator, matchingParty, callback) {
 }
 
 const web3Api = {
-    getPipeBalance(sender, callback) {
-        simpleExchangeInstance.pipeBalance.call(sender, (error, result) => {
-            if (error) {
-                console.log(error);
+    getPipeBalance(sender) {
+        return new Promise((resolve, reject) => {
+            const pipeBalance = simpleExchangeInstance.pipeBalance.call(sender);
+            if (pipeBalance) {
+                resolve(pipeBalance.toString(10));
             } else {
-                const pipeBalance = result.toString(10);
-                callback(pipeBalance);
+                reject(new Error('Could not retrieve tube balance'));
             }
         });
     },
-    getTubeBalance(sender, callback) {
-        simpleExchangeInstance.tubeBalance.call(sender, (error, result) => {
-            if (error) {
-                console.log(error);
+    getTubeBalance(sender) {
+        return new Promise((resolve, reject) => {
+            const tubeBalance = simpleExchangeInstance.tubeBalance.call(sender);
+            if (tubeBalance) {
+                resolve(tubeBalance.toString(10));
             } else {
-                const pipeBalance = result.toString(10);
-                callback(pipeBalance);
+                reject(new Error('Could not retrieve tube balance'));
             }
         });
     },
@@ -60,13 +60,15 @@ const web3Api = {
         const pipeAmount = parseInt(body.pipeAmount);
         const orderCreator = body.sender;
         buyerOrSeller(buy, orderCreator, matchingParty, function (boolBuy, buyer, seller) {
-            simpleExchangeInstance.placeOrder.sendTransaction(boolBuy, tubeAmount, pipeAmount, buyer, seller, (error, result) => {
-                if (error) {
-                    console.log(error);
-                } else {
-                    callback(result);
-                }
-            });
+            simpleExchangeInstance
+                .placeOrder
+                .sendTransaction(boolBuy, tubeAmount, pipeAmount, buyer, seller, (error, result) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        callback(result);
+                    }
+                });
         });
     }
 };
