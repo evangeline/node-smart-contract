@@ -13,7 +13,7 @@ const Web3 = require('web3');
 const SimpleExchange = require('../truffle/build/contracts/SimpleExchange.json');
 
 // eslint-disable-next-line no-unused-vars
-const { address: contractAddress } = SimpleExchange.networks[5777];
+const { address: contractAddress } = SimpleExchange.networks[4447];
 // we use 'truffle develop' in our test script to spawn an in-memory javascript
 // implementation of an Ethereum test network. It runs on port 9545.
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
@@ -21,28 +21,45 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
 // eslint-disable-next-line no-unused-vars
 const simpleExchangeInterface = web3.eth.contract(SimpleExchange.abi);
 const simpleExchangeInstance = simpleExchangeInterface.at(contractAddress);
+// setting default account to pay gas?
+web3.eth.defaultAccount = web3.eth.accounts[0];
 
 const web3Api = {
-    getPipeBalance(sender, callback) {
-        simpleExchangeInstance.pipeBalance.call(sender, (error, result) => {
-            if (error) {
-                console.log(error);
+    getPipeBalance(sender) {
+        return new Promise((resolve, reject) => {
+            const pipeBalance = simpleExchangeInstance.pipeBalance.call(sender);
+            if (pipeBalance) {
+                resolve(pipeBalance.toString(10));
             } else {
-                const pipeBalance = result.toString(10);
-                callback(pipeBalance);
+                reject(new Error('Could not retrieve pipe balance'));
             }
         });
     },
-    getTubeBalance(sender, callback) {
-        simpleExchangeInstance.tubeBalance.call(sender, (error, result) => {
-            if (error) {
-                console.log(error);
+    getTubeBalance(sender) {
+        return new Promise((resolve, reject) => {
+            const tubeBalance = simpleExchangeInstance.tubeBalance.call(sender);
+            if (tubeBalance) {
+                resolve(tubeBalance.toString(10));
             } else {
-                const pipeBalance = result.toString(10);
-                callback(pipeBalance);
+                reject(new Error('Could not retrieve tube balance'));
             }
         });
-    }
+    },
+    placeOrder(body, matchingParty) {
+        return new Promise((resolve) => {
+            const buy = (body.buy === 'true');
+            const tubeAmount = parseInt(body.tubeAmount);
+            const pipeAmount = parseInt(body.pipeAmount);
+            const orderCreator = body.sender;
+            if (buy) {
+                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, orderCreator, matchingParty);
+                resolve(txHash);
+            } else {
+                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, matchingParty, orderCreator);
+                resolve(txHash);
+            }
+        });
+    },
 };
 
 web3Api.getAccounts = () => web3.eth.accounts;

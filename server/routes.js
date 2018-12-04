@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const dbApi = require('./dbApi');
 const web3Api = require('./web3Api');
-const ethereumAddresses = web3Api.getAccounts();
 
 // middleware to check if address is valid
 
@@ -25,36 +24,49 @@ module.exports = function routing(app) {
     });
 
     function wrapAsync(fn) {
-        return function(req, res, next) {
+        return function (req, res, next) {
             // Make sure to `.catch()` any errors and pass them along to the `next()`
             // middleware in the chain, in this case the error handler.
             fn(req, res, next).catch(next);
         };
     }
 
-    router.post('/api/placeOrder', async (req, res, next) => {
-        res.status(201).json({}).send();
-        return next();
-    });
+    router.post('/api/placeOrder', wrapAsync(async (req, res, next) => {
+        const body = req.body;
+        const matchingParty = await dbApi.placeOrder(body);
+        console.log(`matchingParty ${matchingParty}`);
+        if (matchingParty) {
+            const txHash = await web3Api.placeOrder(body, matchingParty);
+            console.log(txHash);
+            // update status = false
+            console.log('matching party found');
+            res.status(201).json({ matched: true, txHash: txHash }).send();
+            return next();
+        } if (!matchingParty) {
+            console.log('matching party not found');
+            res.status(201).json({ matched: false, txHash: null }).send();
+            return next();
+        }
+    }));
 
     router.get('/api/:sender/tubeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getTubeBalance(sender, function(tubeBalance) {
-            res.status(200).json({ balance: tubeBalance }).send();
-            return next();
-        });
+        const tubeBalance = await web3Api.getTubeBalance(sender);
+        res.status(200).json({ balance: tubeBalance }).send();
+        return next();
     }));
 
-    router.get('/api/:sender/pipeBalance', async (req, res, next) => {
+    router.get('/api/:sender/pipeBalance', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        web3Api.getPipeBalance(sender, function(pipeBalance) {
-            res.status(200).json({ balance: pipeBalance }).send();
-            return next();
-        });
-    });
-
-    router.get('/api/:sender/outstandingOrders', async (req, res, next) => {
-        res.status(200).json({}).send();
+        const pipeBalance = await web3Api.getPipeBalance(sender);
+        res.status(200).json({ balance: pipeBalance }).send();
         return next();
-    });
+    }));
+
+    router.get('/api/:sender/outstandingOrders', wrapAsync(async (req, res, next) => {
+        const sender = req.params.sender;
+        const outstandingOrders = await dbApi.outstandingOrders(sender);
+        res.status(200).json(outstandingOrders).send();
+        return next();
+    }));
 };
