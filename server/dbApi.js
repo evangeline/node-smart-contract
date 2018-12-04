@@ -11,43 +11,33 @@ db.defaults({
     orders: [],
 }).write();
 
-function buyOrSell(buy, callback) {
-    if (buy === 'true') {
-        callback('false');
-    } else {
-        callback('true');
-    }
-}
-
 module.exports = {
-    placeOrder(body, callback) {
-        const buy = body.buy;
-        const tubeAmount = body.tubeAmount;
-        const pipeAmount = body.pipeAmount;
-        const sender = body.sender;
-        const id = uuidv4();
-        console.log('placing order...');
-        // create order in order book
-        db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: true }).write();
-
-        // find match? returns true or false depending on whether a match has been found.
-        buyOrSell(body.buy, (buysell) => {
-            const order = db.get('orders').find({ buy: buysell, pipeAmount: tubeAmount, tubeAmount: pipeAmount, active: true }).value();
+    placeOrder(body) {
+        return new Promise((resolve) => {
+            const buy = (body.buy === 'true');
+            const tubeAmount = parseInt(body.tubeAmount);
+            const pipeAmount = parseInt(body.pipeAmount);
+            const sender = body.sender;
+            const id = uuidv4();
+            // create order in order book
+            db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: true }).write();
+            const order = db.get('orders').find({ buy: !buy, pipeAmount: tubeAmount, tubeAmount: pipeAmount, active: true }).value();
+            // filter out orders when it's the same person?
             if (order) {
-                callback(true, order.sender);
+                resolve(order.sender);
             } else {
-                callback(false, null);
+                resolve(null);
             }
         });
     },
-    outstandingOrders(sender, callback) {
-        console.log('getting outstanding orders...');
-        const orders = db.get('orders').value();
-        console.log(`all orders ${orders}`);
-        console.log(_.where(orders, {active: true}));
-        const outstanding = _.where(orders, {active: true});
-        // remove active key from JSON
-        const cleanedOutstanding = _.map(outstanding, o => _.omit(o, 'active'));
-        callback(cleanedOutstanding);
-    }
+
+    outstandingOrders(sender) {
+        return new Promise((resolve) => {
+            const orders = db.get('orders').value();
+            const outstanding = _.filter(orders, order => order.sender === sender && order.active === true);
+            // remove active key from JSON
+            const cleanedOutstanding = _.map(outstanding, o => _.omit(o, 'active'));
+            resolve(cleanedOutstanding);
+        });
+    },
 };

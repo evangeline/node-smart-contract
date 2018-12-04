@@ -24,15 +24,6 @@ const simpleExchangeInstance = simpleExchangeInterface.at(contractAddress);
 // setting default account to pay gas?
 web3.eth.defaultAccount = web3.eth.accounts[0];
 
-// check is orderCreator is a buyer or seller
-function buyerOrSeller(buy, orderCreator, matchingParty, callback) {
-    if (buy === 'true') {
-        callback(true, orderCreator, matchingParty);
-    } else {
-        callback(false, matchingParty, orderCreator);
-    }
-}
-
 const web3Api = {
     getPipeBalance(sender) {
         return new Promise((resolve, reject) => {
@@ -40,7 +31,7 @@ const web3Api = {
             if (pipeBalance) {
                 resolve(pipeBalance.toString(10));
             } else {
-                reject(new Error('Could not retrieve tube balance'));
+                reject(new Error('Could not retrieve pipe balance'));
             }
         });
     },
@@ -54,23 +45,21 @@ const web3Api = {
             }
         });
     },
-    placeOrder(body, matchingParty, callback) {
-        const buy = body.buy;
-        const tubeAmount = parseInt(body.tubeAmount);
-        const pipeAmount = parseInt(body.pipeAmount);
-        const orderCreator = body.sender;
-        buyerOrSeller(buy, orderCreator, matchingParty, function (boolBuy, buyer, seller) {
-            simpleExchangeInstance
-                .placeOrder
-                .sendTransaction(boolBuy, tubeAmount, pipeAmount, buyer, seller, (error, result) => {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        callback(result);
-                    }
-                });
+    placeOrder(body, matchingParty) {
+        return new Promise((resolve) => {
+            const buy = (body.buy === 'true');
+            const tubeAmount = parseInt(body.tubeAmount);
+            const pipeAmount = parseInt(body.pipeAmount);
+            const orderCreator = body.sender;
+            if (buy) {
+                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, orderCreator, matchingParty);
+                resolve(txHash);
+            } else {
+                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, matchingParty, orderCreator);
+                resolve(txHash);
+            }
         });
-    }
+    },
 };
 
 web3Api.getAccounts = () => web3.eth.accounts;

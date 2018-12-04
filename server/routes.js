@@ -24,7 +24,7 @@ module.exports = function routing(app) {
     });
 
     function wrapAsync(fn) {
-        return function(req, res, next) {
+        return function (req, res, next) {
             // Make sure to `.catch()` any errors and pass them along to the `next()`
             // middleware in the chain, in this case the error handler.
             fn(req, res, next).catch(next);
@@ -33,19 +33,20 @@ module.exports = function routing(app) {
 
     router.post('/api/placeOrder', wrapAsync(async (req, res, next) => {
         const body = req.body;
-        dbApi.placeOrder(body, (matched, matchingParty) => {
-            if (matched === true) {
-                web3Api.placeOrder(body, matchingParty, function (txHash) {
-                    console.log(`matched ${matched}`);
-                    res.status(201).json({ matched: matched, txHash: txHash }).send();
-                    return next();
-                });
-            } else if (matched === false) {
-                console.log(`matched ${matched}`);
-                res.status(201).json({ matched: matched, txHash: null }).send();
-                return next();
-            }
-        });
+        const matchingParty = await dbApi.placeOrder(body);
+        console.log(`matchingParty ${matchingParty}`);
+        if (matchingParty) {
+            const txHash = await web3Api.placeOrder(body, matchingParty);
+            console.log(txHash);
+            // update status = false
+            console.log('matching party found');
+            res.status(201).json({ matched: true, txHash: txHash }).send();
+            return next();
+        } if (!matchingParty) {
+            console.log('matching party not found');
+            res.status(201).json({ matched: false, txHash: null }).send();
+            return next();
+        }
     }));
 
     router.get('/api/:sender/tubeBalance', wrapAsync(async (req, res, next) => {
@@ -62,12 +63,10 @@ module.exports = function routing(app) {
         return next();
     }));
 
-
     router.get('/api/:sender/outstandingOrders', wrapAsync(async (req, res, next) => {
         const sender = req.params.sender;
-        dbApi.outstandingOrders(sender, (orders) => {
-            res.status(200).json(orders).send();
-            return next();
-        });
+        const outstandingOrders = await dbApi.outstandingOrders(sender);
+        res.status(200).json(outstandingOrders).send();
+        return next();
     }));
 };
