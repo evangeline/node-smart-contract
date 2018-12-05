@@ -2,17 +2,15 @@ const low = require('lowdb');
 const _ = require('underscore');
 const FileSync = require('lowdb/adapters/FileSync');
 const uuidv4 = require('uuid/v4'); // to create order ids
-
-
 const adapter = new FileSync('./db.json');
-
 const db = low(adapter);
+
 db.defaults({
     orders: [],
 }).write();
 
 module.exports = {
-    placeOrder(body) {
+    placeOrder(body, matchingOrderID, transactionOccurred) {
         return new Promise((resolve) => {
             const buy = (body.buy === 'true');
             const tubeAmount = parseInt(body.tubeAmount);
@@ -20,17 +18,37 @@ module.exports = {
             const sender = body.sender;
             const id = uuidv4();
             // create order in order book
-            db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: true }).write();
-            const order = db.get('orders').find({ buy: !buy, pipeAmount: tubeAmount, tubeAmount: pipeAmount, active: true }).value();
-            // filter out orders when it's the same person?
-            if (order) {
-                resolve(order.sender);
+            if (matchingOrderID === null || transactionOccurred === false) {
+                console.log('update orders as unfulfilled');
+                db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: true }).write();
             } else {
+                console.log('update orders as executed');
+                db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: false }).write();
+                const updated = db.get('orders').find({ id: matchingOrderID }).assign({ active: false }).write();
+                console.log(updated);
+            }
+            resolve();
+        });
+    },
+    getMatchingParty(body) {
+        return new Promise((resolve) => {
+            const buy = (body.buy === 'true');
+            const tubeAmount = parseInt(body.tubeAmount);
+            const pipeAmount = parseInt(body.pipeAmount);
+            const orders = db.get('orders').value();
+            // Filters for any matching orders that are still active + with a different party.
+            // Assumption is one can't trade with himself.
+            const matchingOrders = _.filter(orders, order => order.buy === !buy && order.tubeAmount === tubeAmount && order.pipeAmount === pipeAmount && order.active === true);
+            console.log(matchingOrders);
+            if (!Array.isArray(matchingOrders) || !matchingOrders.length) {
+                console.log('did not match');
                 resolve(null);
+            } else {
+                console.log('matched');
+                resolve(matchingOrders);
             }
         });
     },
-
     outstandingOrders(sender) {
         return new Promise((resolve) => {
             const orders = db.get('orders').value();

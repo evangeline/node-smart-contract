@@ -45,18 +45,25 @@ const web3Api = {
             }
         });
     },
-    placeOrder(body, matchingParty) {
+    placeOrder(body, matchingOrder) {
         return new Promise((resolve) => {
             const buy = (body.buy === 'true');
             const tubeAmount = parseInt(body.tubeAmount);
             const pipeAmount = parseInt(body.pipeAmount);
             const orderCreator = body.sender;
+            const matchingOrderCreator = matchingOrder.sender;
+            const matchingOrderId = matchingOrder.id;
+            console.log(body);
+            console.log(matchingOrder);
+            console.log(`placing order id... ${matchingOrderId}`);
             if (buy) {
-                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, orderCreator, matchingParty);
-                resolve(txHash);
+                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, orderCreator, matchingOrderCreator);
+                console.log(txHash);
+                resolve([txHash, matchingOrderId]);
             } else {
-                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, matchingParty, orderCreator);
-                resolve(txHash);
+                const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, matchingOrderCreator, orderCreator);
+                console.log(txHash);
+                resolve([txHash, matchingOrderId]);
             }
         });
     },

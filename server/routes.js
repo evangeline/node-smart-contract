@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dbApi = require('./dbApi');
 const web3Api = require('./web3Api');
+const _ = require('underscore');
 
 // middleware to check if address is valid
 
@@ -33,17 +34,34 @@ module.exports = function routing(app) {
 
     router.post('/api/placeOrder', wrapAsync(async (req, res, next) => {
         const body = req.body;
-        const matchingParty = await dbApi.placeOrder(body);
-        console.log(`matchingParty ${matchingParty}`);
-        if (matchingParty) {
-            const txHash = await web3Api.placeOrder(body, matchingParty);
-            console.log(txHash);
-            // update status = false
-            console.log('matching party found');
-            res.status(201).json({ matched: true, txHash: txHash }).send();
-            return next();
-        } if (!matchingParty) {
-            console.log('matching party not found');
+        const matchingOrders = await dbApi.getMatchingParty(body);
+        // Mapping over all possible transactions, starting with the oldest.
+        // We should terminate checking for possible transactions once an transaction is made.
+        console.log(`matchingOrders... ${matchingOrders}`);
+        if (matchingOrders) {
+            console.log('trying to execute order...');
+            // const txHash = await _.map(matchingOrders, web3Api.placeOrder(body, matchingOrders));
+            const order = _.map(matchingOrders, _.partial(web3Api.placeOrder, body));
+            const confirmedOrder = await order[0];
+            const txHash = confirmedOrder[0];
+            const matchingOrderID = confirmedOrder[1];
+            // Transaction may not take place at all, which is why we check if a txHash is returned
+            if (txHash) {
+                (console.log(`txHash received ${txHash}`));
+                // Order was filled and it's set active = false
+                await dbApi.placeOrder(body, matchingOrderID, true);
+                res.status(201).json({ matched: true, txHash: txHash }).send();
+                return next();
+            } else {
+                (console.log('txHash not received'));
+                // Order wasn't filled and it's set active = true
+                await dbApi.placeOrder(body, matchingOrderID, false);
+                res.status(201).json({ matched: true, txHash: null }).send();
+                return next();
+            }
+        } else if (!matchingOrders) {
+            // No matches were found
+            await dbApi.placeOrder(body, null, false);
             res.status(201).json({ matched: false, txHash: null }).send();
             return next();
         }
