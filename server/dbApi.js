@@ -31,10 +31,11 @@ module.exports = {
             const buy = (body.buy === 'true');
             const tubeAmount = parseInt(body.tubeAmount);
             const pipeAmount = parseInt(body.pipeAmount);
+            const price = tubeAmount / pipeAmount;
             const orders = db.get('orders').value();
             // Filters for any matching orders that are still active
             // Assumption is one can trade with himself cuz tests.
-            const matchingOrders = _.filter(orders, order => order.buy === !buy && order.tubeAmount === tubeAmount && order.pipeAmount === pipeAmount && order.active === true);
+            const matchingOrders = _.filter(orders, order => order.buy === !buy && order.tubeAmount / order.pipeAmount === price && order.active === true);
             if (!Array.isArray(matchingOrders) || !matchingOrders.length) {
                 console.log('did not match');
                 resolve(null);

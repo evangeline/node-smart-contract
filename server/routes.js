@@ -45,9 +45,10 @@ module.exports = function routing(app) {
         console.log(`matchingOrders... ${matchingOrders}`);
         if (validOrder && matchingOrders) {
             console.log('executing order...');
-            const confirmedOrder = await web3Api.placeOrder(body, matchingOrders[0]);
-            const txHash = confirmedOrder[0];
-            const matchingOrderID = confirmedOrder[1];
+            const confirmedOrder = await web3Api.placeOrder(body, matchingOrders);
+            const txHash = confirmedOrder[0][0];
+            const matchingOrderID = confirmedOrder[0][1];
+            // TODO update all transacted orders as false
             // Transaction may not take place at all, which is why we check if a txHash is returned
             if (txHash) {
                 (console.log(`txHash received ${txHash}`));
