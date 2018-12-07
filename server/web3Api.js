@@ -53,16 +53,12 @@ const web3Api = {
             const orderCreator = body.sender;
             const matchingOrderCreator = matchingOrder.sender;
             const matchingOrderId = matchingOrder.id;
-            console.log(body);
-            console.log(matchingOrder);
             console.log(`placing order id... ${matchingOrderId}`);
             if (buy) {
                 const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, orderCreator, matchingOrderCreator);
-                console.log(txHash);
                 resolve([txHash, matchingOrderId]);
             } else {
                 const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, tubeAmount, pipeAmount, matchingOrderCreator, orderCreator);
-                console.log(txHash);
                 resolve([txHash, matchingOrderId]);
             }
         });

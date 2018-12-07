@@ -21,7 +21,6 @@ module.exports = {
                 console.log('update orders as executed');
                 db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: false }).write();
                 const updated = db.get('orders').find({ id: matchingOrderID }).assign({ active: false }).write();
-                console.log(updated);
             }
             resolve();
         });
@@ -36,7 +35,6 @@ module.exports = {
             // Filters for any matching orders that are still active
             // Assumption is one can trade with himself cuz tests.
             const matchingOrders = _.filter(orders, order => order.buy === !buy && order.tubeAmount === tubeAmount && order.pipeAmount === pipeAmount && order.active === true);
-            console.log(matchingOrders);
             if (!Array.isArray(matchingOrders) || !matchingOrders.length) {
                 console.log('did not match');
                 resolve(null);
@@ -52,7 +50,6 @@ module.exports = {
             const orders = db.get('orders').value();
             const outstanding = _.filter(orders, order => order.sender === sender && order.active === true);
             // remove active key from JSON
-            console.log(`get outstanding orders ${outstanding}`);
             const cleanedOutstanding = _.map(outstanding, o => _.omit(o, 'active'));
             resolve(cleanedOutstanding);
         });
