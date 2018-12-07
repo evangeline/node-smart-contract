@@ -40,8 +40,7 @@ module.exports = function routing(app) {
         // We should terminate checking for possible transactions once an transaction is made.
         console.log(`matchingOrders... ${matchingOrders}`);
         if (matchingOrders) {
-            console.log('trying to execute order...');
-            // const txHash = await _.map(matchingOrders, web3Api.placeOrder(body, matchingOrders));
+            console.log('executing order...');
             const order = _.map(matchingOrders, _.partial(web3Api.placeOrder, body));
             const confirmedOrder = await order[0];
             const txHash = confirmedOrder[0];
