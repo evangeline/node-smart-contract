@@ -20,7 +20,7 @@ module.exports = function routing(app) {
 
     app.use('/', router);
 
-    app.use(function(error, req, res, next) {
+    app.use((error, req, res, next) => {
         // Gets called because of `wrapAsync()`
         res.status(400).json({ error: error.message }).send();
     });
@@ -35,14 +35,17 @@ module.exports = function routing(app) {
 
     router.post('/api/placeOrder', wrapAsync(async (req, res, next) => {
         const body = req.body;
+        // Is sender allowed to place an order? what if they want to sell more than they can buy?
+        // The smart contract would handle it but ideally I want to reduce throwing
+        // bad data over and then doing error handling
+        const validOrder = await web3Api.validOrder(body);
         const matchingOrders = await dbApi.getMatchingParty(body);
-        // Mapping over all possible transactions, starting with the oldest.
-        // We should terminate checking for possible transactions once an transaction is made.
+
+        // Checking for matching orders, and executing starting from the oldest
         console.log(`matchingOrders... ${matchingOrders}`);
-        if (matchingOrders) {
+        if (validOrder && matchingOrders) {
             console.log('executing order...');
-            const order = _.map(matchingOrders, _.partial(web3Api.placeOrder, body));
-            const confirmedOrder = await order[0];
+            const confirmedOrder = await web3Api.placeOrder(body, matchingOrders[0]);
             const txHash = confirmedOrder[0];
             const matchingOrderID = confirmedOrder[1];
             // Transaction may not take place at all, which is why we check if a txHash is returned
@@ -59,9 +62,14 @@ module.exports = function routing(app) {
                 res.status(201).json({ matched: true, txHash: null }).send();
                 return next();
             }
-        } else if (!matchingOrders) {
+        } else if (validOrder && !matchingOrders) {
+            console.log('valid order but no match found');
             // No matches were found
             await dbApi.placeOrder(body, null, false);
+            res.status(201).json({ matched: false, txHash: null }).send();
+            return next();
+        } else if (!validOrder) {
+            console.log('not valid order')
             res.status(201).json({ matched: false, txHash: null }).send();
             return next();
         }

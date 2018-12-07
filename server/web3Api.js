@@ -25,6 +25,21 @@ const simpleExchangeInstance = simpleExchangeInterface.at(contractAddress);
 web3.eth.defaultAccount = web3.eth.accounts[0];
 
 const web3Api = {
+    validOrder(body) {
+        return new Promise((resolve) => {
+            const sender = body.sender;
+            const buy = (body.buy === 'true');
+            if (buy) {
+                const tubeAmount = parseInt(body.tubeAmount);
+                const tubeBalance = simpleExchangeInstance.tubeBalance.call(sender);
+                resolve(tubeBalance > tubeAmount);
+            } else {
+                const pipeAmount = parseInt(body.pipeAmount);
+                const pipeBalance = simpleExchangeInstance.pipeBalance.call(sender);
+                resolve(pipeBalance > pipeAmount);
+            }
+        })
+    },
     getPipeBalance(sender) {
         return new Promise((resolve, reject) => {
             const pipeBalance = simpleExchangeInstance.pipeBalance.call(sender);
