@@ -4,6 +4,7 @@ const cors = require('cors');
 const dbApi = require('./dbApi');
 const web3Api = require('./web3Api');
 const _ = require('underscore');
+const ethereumAddresses = web3Api.getAccounts();
 
 // middleware to check if address is valid
 

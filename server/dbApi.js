@@ -3,15 +3,11 @@ const _ = require('underscore');
 const FileSync = require('lowdb/adapters/FileSync');
 const uuidv4 = require('uuid/v4'); // to create order ids
 const adapter = new FileSync('./db.json');
-const db = low(adapter);
-
-db.defaults({
-    orders: [],
-}).write();
 
 module.exports = {
     placeOrder(body, matchingOrderID, transactionOccurred) {
         return new Promise((resolve) => {
+            const db = low(adapter);
             const buy = (body.buy === 'true');
             const tubeAmount = parseInt(body.tubeAmount);
             const pipeAmount = parseInt(body.pipeAmount);
@@ -32,6 +28,7 @@ module.exports = {
     },
     getMatchingParty(body) {
         return new Promise((resolve) => {
+            const db = low(adapter);
             const buy = (body.buy === 'true');
             const tubeAmount = parseInt(body.tubeAmount);
             const pipeAmount = parseInt(body.pipeAmount);
@@ -51,9 +48,11 @@ module.exports = {
     },
     outstandingOrders(sender) {
         return new Promise((resolve) => {
+            const db = low(adapter);
             const orders = db.get('orders').value();
             const outstanding = _.filter(orders, order => order.sender === sender && order.active === true);
             // remove active key from JSON
+            console.log(`get outstanding orders ${outstanding}`);
             const cleanedOutstanding = _.map(outstanding, o => _.omit(o, 'active'));
             resolve(cleanedOutstanding);
         });

@@ -46,8 +46,8 @@ contract SimpleExchange {
             require(tubeBalance[buyer] > tubeAmount);
             pipeBalance[seller] -= pipeAmount;
             pipeBalance[buyer] += pipeAmount;
-            tubeBalance[buyer] += tubeAmount;
-            tubeBalance[seller] -= tubeAmount;
+            tubeBalance[buyer] -= tubeAmount;
+            tubeBalance[seller] += tubeAmount;
         }
     }
 }
