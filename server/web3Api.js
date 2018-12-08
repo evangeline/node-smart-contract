@@ -78,6 +78,14 @@ const web3Api = {
             // all orders in db are valid which means you can trade with anyone
             // loop through all matching orders
             // transact the min (what you can sell vs what they want to buy), decrease the limit, repeat
+            // TODO return any orders that are partially filled and write as new orders to db:
+            //  return and map through all transacted matchingOrders
+            //  sum their total pipes and tubes amount
+            //  subtract our order from the total amount for each asset
+            //  if the result is > 0, it means that the last matchingOrder was partially fulfilled
+            //  update the db with a new order for that order creator with the result amount
+            //  if the result is < 0, it means the our order was partially fulfilled
+            //  update the db with a new order for ourselves with our old order amounts-abs(result)
             for (let i = 0; i < matchingOrders.length; i++) {
                 const matchingOrderCreator = matchingOrders[i].sender;
                 const matchingOrderId = matchingOrders[i].id;

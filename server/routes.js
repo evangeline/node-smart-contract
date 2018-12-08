@@ -53,6 +53,7 @@ module.exports = function routing(app) {
                 (console.log(`txHash received ${txHash}`));
                 // Order was filled and it's set active = false
                 await dbApi.placeOrder(body, confirmedOrders, true);
+                // TODO how to send a list of txHashes back?
                 res.status(201).json({ matched: true, txHash: txHash }).send();
                 return next();
             } else {
