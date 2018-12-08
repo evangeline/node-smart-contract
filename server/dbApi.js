@@ -5,7 +5,7 @@ const uuidv4 = require('uuid/v4'); // to create order ids
 const adapter = new FileSync('./db.json');
 
 module.exports = {
-    placeOrder(body, matchingOrderID, transactionOccurred) {
+    placeOrder(body, matchingOrders, transactionOccurred) {
         return new Promise((resolve) => {
             const db = low(adapter);
             const buy = (body.buy === 'true');
@@ -14,13 +14,15 @@ module.exports = {
             const sender = body.sender;
             const id = uuidv4();
             // create order in order book
-            if (matchingOrderID === null || transactionOccurred === false) {
+            if (!Array.isArray(matchingOrders) || !matchingOrders.length || transactionOccurred === false) {
                 console.log('update orders as unfulfilled');
                 db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: true }).write();
             } else {
                 console.log('update orders as executed');
                 db.get('orders').push({ id, buy, tubeAmount, pipeAmount, sender, active: false }).write();
-                const updated = db.get('orders').find({ id: matchingOrderID }).assign({ active: false }).write();
+                for (let i = 0; i < matchingOrders.length; i++) {
+                    db.get('orders').find({ id: matchingOrders[i][1] }).assign({ active: false }).write();
+                }
             }
             resolve();
         });

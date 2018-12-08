@@ -69,34 +69,39 @@ const web3Api = {
             const orderCreator = body.sender;
             let buyLimit = tubeAmount;
             let sellLimit = pipeAmount;
-            let transactedAmount = 0;
             let transactedOrders = [];
-
+            let toTransact = 0;
+            let transacted = 0;
+            // BUY = + PIPES, - TUBES
+            // SELL = + TUBES, - PIPES
+            // limited by the amount of assets you want to and can sell
+            // all orders in db are valid which means you can trade with anyone
+            // loop through all matching orders
+            // transact the min (what you can sell vs what they want to buy), decrease the limit, repeat
             for (let i = 0; i < matchingOrders.length; i++) {
                 const matchingOrderCreator = matchingOrders[i].sender;
                 const matchingOrderId = matchingOrders[i].id;
                 console.log(`placing order id... ${matchingOrderId}`);
                 if (buy) {
-                    buyLimit = Math.min(matchingOrders[i].tubeAmount, buyLimit - transactedAmount);
-                    console.log(`buy limit ${buyLimit}`);
-                    if (buyLimit > 0) {
+                    toTransact = Math.min(matchingOrders[i].tubeAmount, buyLimit - transacted);
+                    console.log(`limit ${toTransact}`);
+                    if (toTransact > 0) {
                         const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, buyLimit, buyLimit / price, orderCreator, matchingOrderCreator);
-                        transactedAmount += buyLimit;
-                        console.log(`buy transacted amount ${transactedAmount}`);
                         transactedOrders.push([txHash, matchingOrderId]);
                         console.log(transactedOrders);
+                        transacted += toTransact;
                     } else {
                         resolve(transactedOrders);
                     }
                 } else {
-                    sellLimit = Math.min(matchingOrders[i].pipeAmount, sellLimit - transactedAmount);
                     console.log(`sold limit ${sellLimit}`);
-                    if (sellLimit > 0) {
+                    toTransact = Math.min(matchingOrders[i].pipeAmount, sellLimit - transacted);
+                    console.log(`limit ${toTransact}`);
+                    if (toTransact > 0) {
                         const txHash = simpleExchangeInstance.placeOrder.sendTransaction(buy, sellLimit * price, sellLimit, matchingOrderCreator, orderCreator);
-                        transactedAmount += sellLimit;
-                        console.log(`sold transacted amount ${transactedAmount}`);
                         transactedOrders.push([txHash, matchingOrderId]);
                         console.log(transactedOrders);
+                        transacted += toTransact;
                     } else {
                         resolve(transactedOrders);
                     }
